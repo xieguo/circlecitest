@@ -8,7 +8,17 @@ jobs:
     docker:
       # specify the version you desire here
       - image: circleci/php:7.1.18-cli-node-browsers
+        environment:
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_DB: test
+          MYSQL_USER: root
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+          MYSQL_PASSWORD:
       - image: circleci/mysql:5.7.22-ram
+        command: mysqld
+        environment:
+          MYSQL_USER: root
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
 
     working_directory: ~/repository
 
@@ -28,9 +38,21 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-js-
 
-      - run: sudo apt install libpng-dev -y
-      - run: composer install -n --prefer-dist
-      - run: npm install
+      - run:
+          name: Installing OS dependencies
+          command: sudo apt install mysql-client libpng-dev -y
+      - run:
+          name: Installing PHP dependencies (Composer)
+          command: composer install -n --prefer-dist
+      - run:
+          name: Installing JS dependencies (npm)
+          command: npm install
+      - run:
+          name: Database - create
+          command: mysql  -h 127.0.0.1 -u root -e "create database test;"
+      - run:
+          name: "Migrations"
+          command: php artisan migrate
 
       - save_cache:
           key: v1-dependencies-php-{{ checksum "composer.json" }}
