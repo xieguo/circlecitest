@@ -24,6 +24,7 @@ jobs:
           - v1-dependencies-php-
           - v1-dependencies-js-
 
+      - run: sudo apt install libpng-dev -y
       - run: composer install -n --prefer-dist
       - run: npm install
 
