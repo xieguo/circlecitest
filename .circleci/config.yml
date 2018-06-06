@@ -54,8 +54,11 @@ jobs:
           name: Database - create
           command: mysql -h 127.0.0.1 -u root -e "create database test;"
       - run:
-          name: "Migrations"
+          name: Migrations
           command: php artisan migrate --force
+      - run:
+          name: Preparing build for artifact store
+          command: rm -r node_modules
 
       - store_artifacts:
           path: ~/repository
