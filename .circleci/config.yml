@@ -95,15 +95,15 @@ workflows:
       - deploy-production:
           requires:
             - build
-            filters:
-          branches:
-            only:
-              - master
+          filters:
+            branches:
+              only:
+                - master
       - deploy-staging:
           requires:
             - build
-            filters:
-          branches:
-            only:
-              - /feature/.*
-              - /hotfix/.*
+          filters:
+            branches:
+              only:
+                - /feature/.*
+                - /hotfix/.*
