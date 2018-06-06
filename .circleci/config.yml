@@ -22,14 +22,13 @@ jobs:
         environment:
           MYSQL_USER: root
           MYSQL_ALLOW_EMPTY_PASSWORD: true
-
-    deploy:
-     machine:
+  deploy:
+    machine:
       enabled: true
     steps:
       - run:
-          name: Deploy Over SSH
-          command: |
+        name: Deploy Over SSH
+        command: |
             ssh $SSH_USER_STAGING@$SSH_HOST_STAGING "uname -a"
 
     working_directory: ~/repository
