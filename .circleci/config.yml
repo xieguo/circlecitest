@@ -75,6 +75,5 @@ jobs:
       enabled: true
     steps:
       - run:
-        name: Deploy Over SSH
-        command: |
-            ssh $SSH_USER_STAGING@$SSH_HOST_STAGING "uname -a"
+          name: Deploy Over SSH
+          command: ssh $SSH_USER_STAGING@$SSH_HOST_STAGING "uname -a"
