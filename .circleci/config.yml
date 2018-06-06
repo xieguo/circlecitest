@@ -70,12 +70,20 @@ jobs:
 
       # run tests!
       #- run: phpunit
-  deploy:
+  deploy-production:
     machine:
       enabled: true
     steps:
       - run:
-          name: Deploy Over SSH
+          name: Deploy PRODUCTION Over SSH
+          command: ssh $SSH_USER_STAGING@$SSH_HOST_STAGING "uname -a"
+
+  deploy-staging:
+    machine:
+      enabled: true
+    steps:
+      - run:
+          name: Deploy STAGING Over SSH
           command: ssh $SSH_USER_STAGING@$SSH_HOST_STAGING "uname -a"
 
 
@@ -84,6 +92,18 @@ workflows:
   build-and-deploy:
     jobs:
       - build
-      - deploy:
+      - deploy-production:
           requires:
             - build
+            filters:
+          branches:
+            only:
+              - master
+      - deploy-staging:
+          requires:
+            - build
+            filters:
+          branches:
+            only:
+              - /feature/.*
+              - /hotfix/.*
