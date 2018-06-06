@@ -58,10 +58,10 @@ jobs:
           command: php artisan migrate --force
       - run:
           name: Preparing build for artifact store
-          command: rm -r node_modules
+          command: rm -r node_modules && zip -r -q artifacts .
 
       - store_artifacts:
-          path: ~/repository
+          path: artifacts.zip
 
       - save_cache:
           key: v1-dependencies-php-{{ checksum "composer.json" }}
