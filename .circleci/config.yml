@@ -90,8 +90,7 @@ jobs:
     steps:
       - run:
           name: Deploy STAGING Over SSH
-          command:
-            - >
+          command: |
               ssh $SSH_USER_STAGING@$SSH_HOST_STAGING /bin/bash << EOF
               echo $CIRCLE_PROJECT_USERNAME
               echo $CIRCLE_PROJECT_REPONAME
