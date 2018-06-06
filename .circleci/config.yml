@@ -57,6 +57,9 @@ jobs:
           name: "Migrations"
           command: php artisan migrate --force
 
+      - store_artifacts:
+          path: ~/repository
+
       - save_cache:
           key: v1-dependencies-php-{{ checksum "composer.json" }}
           paths:
