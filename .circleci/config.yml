@@ -105,5 +105,5 @@ workflows:
           filters:
             branches:
               only:
-                - /feature/.*
-                - /hotfix/.*
+                - /feature\/.*/
+                - /hotfix\/.*/
