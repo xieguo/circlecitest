@@ -41,7 +41,7 @@ jobs:
       - run:
           name: Installing OS dependencies
           command: |
-             << EOF
+             /bin/bash << EOF
              sudo apt install mysql-client libpng-dev -y
              sudo docker-php-ext-install pdo_mysql
              curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
@@ -57,7 +57,7 @@ jobs:
       - run:
           name: Downloading MySQL Dumps and importing them into conatiner
           command: |
-              << EOF
+              /bin/bash << EOF
               aws s3 cp s3://bemyguest-infrastructure/demo-dumps/main-dump-structure.sql .
               aws s3 cp s3://bemyguest-infrastructure/demo-dumps/logs-dump-structure.sql .
               aws s3 cp s3://bemyguest-infrastructure/demo-dumps/stats-dump-structure.sql .
