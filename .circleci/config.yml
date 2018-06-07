@@ -14,7 +14,7 @@ jobs:
           #MYSQL_USER: root
           #MYSQL_ALLOW_EMPTY_PASSWORD: true
           #MYSQL_PASSWORD:
-          DB_DATABASE: test
+          DB_DATABASE: bemyguest
           DB_USERNAME: root
           DB_PASSWORD: ''
       - image: circleci/mysql:5.7.22-ram
