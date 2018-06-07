@@ -27,23 +27,27 @@ jobs:
 
     steps:
       - checkout
-
       # Download and cache dependencies (PHP + JS)
       - restore_cache:
           keys:
           - v1-dependencies-php-{{ checksum "composer.json" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-php-
-
       - restore_cache:
           keys:
           - v1-dependencies-js-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-js-
-
       - run:
           name: Installing OS dependencies
-          command: sudo apt install mysql-client libpng-dev -y && sudo docker-php-ext-install pdo_mysql
+          command: |
+             << EOF
+             sudo apt install mysql-client libpng-dev -y
+             sudo docker-php-ext-install pdo_mysql
+             curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+             unzip awscli-bundle.zip
+             sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+             EOF
       - run:
           name: Installing PHP dependencies (Composer)
           command: composer install -n --prefer-dist
@@ -51,8 +55,19 @@ jobs:
           name: Installing JS dependencies (npm)
           command: npm install
       - run:
-          name: Database - create
-          command: mysql -h 127.0.0.1 -u root -e "create database test;"
+          name: Downloading MySQL Dumps and importing them into conatiner
+          command: |
+              << EOF
+              aws s3 cp s3://bemyguest-infrastructure/demo-dumps/main-dump-structure.sql .
+              aws s3 cp s3://bemyguest-infrastructure/demo-dumps/logs-dump-structure.sql .
+              aws s3 cp s3://bemyguest-infrastructure/demo-dumps/stats-dump-structure.sql .
+              mysql -h 127.0.0.1 -u root -e "create database bemyguest;"
+              mysql -h 127.0.0.1 -u root -e "create database bemyguest_stats;"
+              mysql -h 127.0.0.1 -u root -e "create database bemyguest_logs;"
+              mysql -h 127.0.0.1 -u root bemyguest < main-dump-structure.sql
+              mysql -h 127.0.0.1 -u root bemyguest_stats < stats-dump-structure.sql
+              mysql -h 127.0.0.1 -u root bemyguest_logs < logs-dump-structure.sql
+              EOF
       - run:
           name: Migrations
           command: php artisan migrate --force
@@ -62,15 +77,12 @@ jobs:
       - run:
           name: Preparing build for artifact store
           command: rm -r node_modules && zip -r -q artifacts .
-
       - store_artifacts:
           path: artifacts.zip
-
       - save_cache:
           key: v1-dependencies-php-{{ checksum "composer.json" }}
           paths:
             - ./vendor
-
       - save_cache:
           key: v1-dependencies-js-{{ checksum "package.json" }}
           paths:
@@ -101,10 +113,20 @@ jobs:
               xargs wget -O /var/www/artifacts/$(echo $CIRCLE_BRANCH | sed -r "s|[-/.]|_|g" | tr '[:upper:]' '[:lower:]').zip
               # Checking
               ls -lah /var/www/artifacts/
+              # Deploying
+              ./circleci_provisioner $CIRCLE_BRANCH
               EOF
+
+#  create_demo_database_dump:
+#    machine:
+#      enabled: true
+#    steps:
+#      - run:
+#          name:
 
 workflows:
   version: 2
+
   build-and-deploy:
     jobs:
       - build
@@ -123,3 +145,13 @@ workflows:
               only:
                 - /feature\/.*/
                 - /hotfix\/.*/
+
+#  scheduled-workflow:
+#    triggers:
+#      - schedule:
+#          cron: "0 6 * * *"
+#          filters:
+#            branches:
+#              only: master
+#    jobs:
+#      - create_demo_database_dump
